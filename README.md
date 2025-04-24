@@ -12,11 +12,11 @@ pnpm add -g color-ramp-cli
 
 ## 🛠 Options
 
-| Option          | escription              | Default |
-| --------------- | ----------------------- | ------- |
-| --size <number> | Number of steps in ramp | 11      |
-| -h, --help      | Show help message       |         |
-| -v, --version   | Show version number     |         |
+| Option               | Description             | Default |
+| -------------------- | ----------------------- | ------- |
+| -s, --steps <number> | Number of steps in ramp | 11      |
+| -h, --help           | Show help message       |         |
+| -v, --version        | Show version number     |         |
 
 ## Example
 

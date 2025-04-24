@@ -1,40 +1,57 @@
 #!/usr/bin/env node
 
-import styles from "ansi-styles";
-import { lerp, step } from "./lib.js";
-import { cac } from "cac";
 import {
   type ColorData,
+  ColorNotation,
   color as cssColor,
   serializeOKLCH,
   serializeRGB,
 } from "@csstools/css-color-parser";
 import { parseComponentValue } from "@csstools/css-parser-algorithms";
 import { tokenize } from "@csstools/css-tokenizer";
+import styles from "ansi-styles";
+import { cac } from "cac";
+import { getErrorMessage, invariant, lerp, chain, pipe, step } from "./lib.js";
 
-function getRamp(o: ColorData | false, size: number): ColorData[] | null {
-  if (!o) return null;
+function toRGB({ channels, colorNotation }: ColorData) {
+  invariant(colorNotation === ColorNotation.RGB);
+  return {
+    r: Math.round(lerp(channels[0], 0, 255)),
+    g: Math.round(lerp(channels[1], 0, 255)),
+    b: Math.round(lerp(channels[2], 0, 255)),
+  };
+}
 
-  const [l, c, h] = o.channels;
-  const b = Math.round(l * size);
+function parseOKLCH(color: string) {
+  return pipe(
+    parseComponentValue(tokenize({ css: color })),
+    chain(cssColor),
+    chain(serializeOKLCH),
+    chain(cssColor),
+  );
+}
 
-  const out: number[] = [];
-  for (let i = 1; i < b; i++) {
-    out.unshift(lerp(step(i, 1, b), 0, l));
+function getRamp(input: ColorData, steps: number): ColorData[] {
+  const [l, c, h] = input.channels;
+  const base = Math.round(l * steps);
+
+  const ls: number[] = [];
+  for (let i = 1; i < base; i++) {
+    ls.unshift(lerp(step(i, 1, base), 0, l));
   }
-  for (let i = b; i <= size; i++) {
-    out.unshift(lerp(step(i, b, size), l, 1));
+  for (let i = base; i <= steps; i++) {
+    ls.unshift(lerp(step(i, base, steps), l, 1));
   }
 
-  return out.reduce<ColorData[]>((acc, l2) => {
-    const out = cssColor(
+  return ls.reduce<ColorData[]>((acc, l2) => {
+    const data = cssColor(
       serializeRGB({
-        ...o,
+        ...input,
         channels: [l2, c, h],
       }),
     );
-    if (out) {
-      acc.push(out);
+    if (data) {
+      acc.push(data);
     }
     return acc;
   }, []);
@@ -43,27 +60,38 @@ function getRamp(o: ColorData | false, size: number): ColorData[] | null {
 const cli = cac("cgr");
 
 cli
-  .command("<...colors>")
-  .option("--size <number>", "", { default: 11 })
-  .action((colors, { size }) => {
+  .command("<...colors>", "list of CSS colors")
+  .option("-s, --steps <number>", "amount of steps in the color ramp", {
+    default: 11,
+  })
+  .example(`  $ ${cli.name} red green blue`)
+  .example(
+    `  $ ${cli.name} "hsl(1turn 100% 50%)" "color-mix(in srgb, blue, red 20%)"`,
+  )
+  .action((colors, { steps }) => {
     for (const color of colors) {
-      const v = parseComponentValue(tokenize({ css: color }));
-      const d = v && cssColor(v);
-      if (d) {
-        const o = serializeOKLCH(d);
-        const ramp = getRamp(cssColor(o), size);
-        for (const r of ramp ?? []) {
-          const rgbAt = (n: number) => Math.round(lerp(r.channels[n], 0, 255));
-          process.stdout.write(
-            `${styles.bgColor.ansi16m(rgbAt(0), rgbAt(1), rgbAt(2))}  `,
-          );
-        }
-        process.stdout.write(`${styles.bgColor.close}\n`);
+      const rampColors = pipe(
+        parseOKLCH(color),
+        chain((n) => getRamp(n, steps)),
+      );
+      if (!rampColors) continue;
+      for (const data of rampColors) {
+        const rgb = toRGB(data);
+        process.stdout.write(
+          `${styles.bgColor.ansi16m(rgb.r, rgb.g, rgb.b)}  `,
+        );
       }
+      process.stdout.write(`${styles.bgColor.close}\n`);
     }
   });
 
 cli.help();
-cli.version("0.0.0");
+cli.version("1.2.0");
 
-cli.parse();
+try {
+  cli.parse(process.argv, { run: false });
+  await cli.runMatchedCommand();
+} catch (error) {
+  console.error(getErrorMessage(error));
+  process.exit(1);
+}

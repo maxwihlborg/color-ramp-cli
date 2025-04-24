@@ -1,6 +1,6 @@
 {
   "name": "color-ramp-cli",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
   "description": "Simple CLI that generates color ramps from css colors",
   "repository": "github:maxwihlborg/color-ramp-cli",
@@ -37,3 +37,4 @@
     "typescript": "^5.8.3"
   }
 }
+
