@@ -2,8 +2,20 @@
   "name": "color-ramp-cli",
   "version": "1.0.0",
   "type": "module",
+  "description": "Simple CLI that generates color ramps from css colors",
+  "repository": "github:maxwihlborg/color-ramp-cli",
+  "keywords": [
+    "cgr",
+    "cli",
+    "color",
+    "css",
+    "generate",
+    "oklch",
+    "ramp"
+  ],
   "scripts": {
-    "build": "esbuild ./src/cli.ts --bundle --platform=node --format=esm --outdir=dist"
+    "build": "esbuild ./src/cli.ts --bundle --platform=node --format=esm --outdir=dist",
+    "prepublish": "rimraf dist && pnpm run build"
   },
   "bin": {
     "cgr": "./dist/cli.js"
@@ -21,6 +33,7 @@
     "ansi-styles": "^6.2.1",
     "cac": "^6.7.14",
     "esbuild": "^0.25.3",
+    "rimraf": "^6.0.1",
     "typescript": "^5.8.3"
   }
 }
