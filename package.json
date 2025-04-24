@@ -1,0 +1,26 @@
+{
+  "name": "color-ramp-cli",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild ./src/cli.ts --bundle --platform=node --format=esm --outdir=dist"
+  },
+  "bin": {
+    "cgr": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@csstools/css-color-parser": "^3.0.8",
+    "@csstools/css-parser-algorithms": "^3.0.4",
+    "@csstools/css-tokenizer": "^3.0.3",
+    "@tsconfig/node20": "^20.1.5",
+    "@types/node": "^22.14.1",
+    "ansi-styles": "^6.2.1",
+    "cac": "^6.7.14",
+    "esbuild": "^0.25.3",
+    "typescript": "^5.8.3"
+  }
+}
