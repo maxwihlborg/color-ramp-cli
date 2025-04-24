@@ -15,7 +15,7 @@
   ],
   "scripts": {
     "build": "esbuild ./src/cli.ts --bundle --platform=node --format=esm --outdir=dist",
-    "prepublish": "rimraf dist && pnpm run build"
+    "prepublish": "rimraf dist && pnpm run build --minify"
   },
   "bin": {
     "cgr": "./dist/cli.js"
