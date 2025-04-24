@@ -43,21 +43,23 @@ function getRamp(o: ColorData | false, size: number): ColorData[] | null {
 const cli = cac("cgr");
 
 cli
-  .command("<color>")
+  .command("<...colors>")
   .option("--size <number>", "", { default: 11 })
-  .action((color, { size }) => {
-    const v = parseComponentValue(tokenize({ css: color }));
-    const d = v && cssColor(v);
-    if (d) {
-      const o = serializeOKLCH(d);
-      const ramp = getRamp(cssColor(o), size);
-      for (const r of ramp ?? []) {
-        const rgbAt = (n: number) => Math.round(lerp(r.channels[n], 0, 255));
-        process.stdout.write(
-          `${styles.bgColor.ansi16m(rgbAt(0), rgbAt(1), rgbAt(2))}  `,
-        );
+  .action((colors, { size }) => {
+    for (const color of colors) {
+      const v = parseComponentValue(tokenize({ css: color }));
+      const d = v && cssColor(v);
+      if (d) {
+        const o = serializeOKLCH(d);
+        const ramp = getRamp(cssColor(o), size);
+        for (const r of ramp ?? []) {
+          const rgbAt = (n: number) => Math.round(lerp(r.channels[n], 0, 255));
+          process.stdout.write(
+            `${styles.bgColor.ansi16m(rgbAt(0), rgbAt(1), rgbAt(2))}  `,
+          );
+        }
+        process.stdout.write(`${styles.bgColor.close}\n`);
       }
-      process.stdout.write(`${styles.bgColor.close}\n`);
     }
   });
 

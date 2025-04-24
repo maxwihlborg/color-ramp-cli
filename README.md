@@ -22,6 +22,8 @@ pnpm add -g color-ramp-cli
 
 ```bash
 cgr "#ff5733"
+npx color-ramp-cli red green blue
+pnpm dlx color-ramp-cli skyblue "rgb(0 255 0)" "hsl(0 100% 25%)"
 ```
 
 This will generate a smooth color ramp based on the input color.
